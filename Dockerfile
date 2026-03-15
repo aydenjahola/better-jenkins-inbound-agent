@@ -57,6 +57,4 @@ RUN set -eux; \
 
 RUN mkdir -p /home/jenkins/agent && chown -R jenkins:jenkins /home/jenkins /opt/node
 
-# USER jenkins
-USER root
 WORKDIR /home/jenkins/agent
