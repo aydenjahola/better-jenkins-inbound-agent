@@ -6,6 +6,7 @@ ARG TARGETARCH
 ARG NODE_VERSION=24.14.0
 ARG GO_VERSION=1.26.1
 ARG DOCKER_VERSION=29.3.0
+ARG NOMAD_VERSION=2.0.0
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PATH="/usr/local/go/bin:/opt/node/bin:${PATH}"
@@ -25,8 +26,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN set -eux; \
     case "${TARGETARCH:-amd64}" in \
-      amd64) NODE_ARCH="x64"; GO_ARCH="amd64"; DOCKER_ARCH="x86_64" ;; \
-      arm64) NODE_ARCH="arm64"; GO_ARCH="arm64"; DOCKER_ARCH="aarch64" ;; \
+      amd64) NODE_ARCH="x64"; GO_ARCH="amd64"; DOCKER_ARCH="x86_64"; NOMAD_ARCH="amd64" ;; \
+      arm64) NODE_ARCH="arm64"; GO_ARCH="arm64"; DOCKER_ARCH="aarch64"; NOMAD_ARCH="arm64" ;; \
       *) echo "Unsupported TARGETARCH: ${TARGETARCH}"; exit 1 ;; \
     esac; \
     \
@@ -50,10 +51,16 @@ RUN set -eux; \
     install -m 0755 /tmp/docker/docker /usr/local/bin/docker; \
     rm -rf /tmp/docker /tmp/docker.tgz; \
     \
+    curl -fsSL "https://releases.hashicorp.com/nomad/${NOMAD_VERSION}/nomad_${NOMAD_VERSION}_linux_${NOMAD_ARCH}.zip" -o /tmp/nomad.zip; \
+    unzip -q /tmp/nomad.zip -d /tmp; \
+    install -m 0755 /tmp/nomad /usr/local/bin/nomad; \
+    rm -f /tmp/nomad /tmp/nomad.zip; \
+    \
     node --version; \
     npm --version; \
     go version; \
-    docker --version
+    docker --version; \
+    nomad version
 
 RUN mkdir -p /home/jenkins/agent && chown -R jenkins:jenkins /home/jenkins /opt/node
 
